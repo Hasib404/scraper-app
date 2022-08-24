@@ -3,9 +3,9 @@ from fastapi import APIRouter
 from schemas import URLSchema
 from .service import Scrapper
 
-# APIRouter creates path operations for shortener module
+# APIRouter creates path operations for Scrapper module
 router = APIRouter(
-    tags=["Scraper App"],
+    tags=["Scrapper App"],
 )
 
 
