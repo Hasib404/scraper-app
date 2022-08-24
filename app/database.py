@@ -5,3 +5,4 @@ client = mongo_client.MongoClient(settings.DATABASE_URL)
 
 db_client = client[settings.MONGO_INITDB_DATABASE]
 URL = db_client.urls
+PRODUCTS = db_client.products

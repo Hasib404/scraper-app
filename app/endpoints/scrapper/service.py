@@ -1,19 +1,25 @@
+from itertools import product
 import requests
+from requests.exceptions import Timeout
 from bs4 import BeautifulSoup
-import csv
+from database import URL, PRODUCTS
 
 
 class Scrapper:
     def __init__(self, url):
         self.url = url
         self.parsed_data = None
+        self.page_count = 1
+        self.status = "Complete"
 
     def __get_page_content(self):
         headers = {
             "User-Agent": "My User Agent 1.0",
         }
-
-        page = requests.get(self.url, headers=headers)
+        try:
+            page = requests.get(self.url, headers=headers, timeout=30)
+        except Timeout:
+            print("Timeout has been raised.")
         soup = BeautifulSoup(page.content, "html.parser")
         self.parsed_data = soup
 
@@ -39,10 +45,14 @@ class Scrapper:
                     if page_next_content:
                         next_url = page_next_content["href"]
                     else:
-                        print("Tried again to fetch the next page url but FAILED")
                         return None
                 except:
-                    print("Next URL not avialable")
+                    print("No more URLs found")
+        if next_url:
+            self.page_count += 1
+            url_dict = {"url": next_url}
+            print(url_dict)
+            URL.insert_one(url_dict)
         return next_url
 
     def __get_product_info(self):
@@ -50,23 +60,19 @@ class Scrapper:
             containers = self.parsed_data.findAll(
                 "div", {"class": "s-item__wrapper clearfix"}
             )
+
             for container in containers:
                 title = container.find("h3", {"class": "s-item__title"}).text
                 price = container.find("span", class_="s-item__price").text
-                print(title)
-                print(price)
+                product_list = {"product": title, "price": price}
+                if title and price:
+                    PRODUCTS.insert_one(product_list)
 
     def run_scrapper(self):
         while self.url:
             self.__get_page_content()
             self.__get_product_info()
-
             next_page_url = self.__get_next_url(self.url)
             self.url = next_page_url
-            print(self.url)
-
-
-s = Scrapper(
-    "https://www.ebay.com/b/Desktops-All-In-One-Computers/171957/bn_1643067?rt=nc&_dmd=1"
-)
-s.run_scrapper()
+        result = {"Status": self.status, "Page_collected": self.page_count}
+        return result
