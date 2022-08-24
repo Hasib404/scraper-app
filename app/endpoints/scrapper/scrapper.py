@@ -1,4 +1,5 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter
+
 from schemas import URLSchema
 from .service import Scrapper
 
@@ -8,7 +9,7 @@ router = APIRouter(
 )
 
 
-@router.post("/url", status_code=status.HTTP_201_CREATED)
+@router.post("/url")
 def fetch_products_from_url(payload: URLSchema):
     url = payload.url
     scrapper = Scrapper(url)

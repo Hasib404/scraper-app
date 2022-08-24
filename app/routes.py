@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+
 from endpoints.scrapper import scrapper
 
 router = APIRouter()

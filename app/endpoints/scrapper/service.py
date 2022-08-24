@@ -1,7 +1,7 @@
-from itertools import product
 import requests
 from requests.exceptions import Timeout
 from bs4 import BeautifulSoup
+
 from database import URL, PRODUCTS
 
 
@@ -19,6 +19,7 @@ class Scrapper:
         try:
             page = requests.get(self.url, headers=headers, timeout=30)
         except Timeout:
+            self.status = "Timedout"
             print("Timeout has been raised.")
         soup = BeautifulSoup(page.content, "html.parser")
         self.parsed_data = soup
@@ -50,12 +51,13 @@ class Scrapper:
                     print("No more URLs found")
         if next_url:
             self.page_count += 1
-            url_dict = {"url": next_url}
-            print(url_dict)
-            URL.insert_one(url_dict)
+
         return next_url
 
     def __get_product_info(self):
+        url_dict = {"url": self.url}
+        URL.insert_one(url_dict)
+
         if self.parsed_data:
             containers = self.parsed_data.findAll(
                 "div", {"class": "s-item__wrapper clearfix"}
@@ -74,5 +76,11 @@ class Scrapper:
             self.__get_product_info()
             next_page_url = self.__get_next_url(self.url)
             self.url = next_page_url
-        result = {"Status": self.status, "Page_collected": self.page_count}
+        total_product = PRODUCTS.count_documents({})
+
+        result = {
+            "status": self.status,
+            "page_collected": self.page_count,
+            "total_product": total_product,
+        }
         return result
