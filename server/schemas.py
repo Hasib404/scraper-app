@@ -3,8 +3,8 @@ from pydantic import BaseModel
 
 
 class URLSchema(BaseModel):
-    name: str
-    email: str
+    url: str
+    created_at: datetime
 
     class Config:
         orm_mode = True

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from endpoints import scrapper
+from endpoints.scrapper import scrapper
 
 router = APIRouter()
 router.include_router(scrapper.router)
